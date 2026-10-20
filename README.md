@@ -24,7 +24,7 @@ Faça o deploy pelo repositório Git conectado à Netlify ou pela CLI da Netlify
 
 As rotas `/login`, `/register` e `/app` recebem arquivos próprios em `/rota/index.html` e regras em `_redirects`, permitindo abrir e atualizar esses endereços diretamente.
 
-Foi confirmado no navegador um erro 404 em https://serene-cuchufli-29657f.netlify.app/login. A correção prepara o projeto para esse ambiente; a implantação corrigida ainda não foi verificada online. Depois do deploy, verificar abertura direta das três rotas, cadastro, login, sessão após atualizar a página e logout.
+O erro 404 em `/login` foi reproduzido e corrigido. No endereço https://serene-cuchufli-29657f.netlify.app/ foram verificados online: abertura direta de `/login`, `/register`, `/app`, API de sessão, cadastro com abertura do editor, restauração da sessão após atualizar a página, logout e novo login com a conta persistida. A conta que existia na prévia local não é migrada ao Netlify: crie uma conta neste site. As credenciais da conta usada no teste ficam fora do repositório.
 
 ## Personalizar
 
@@ -51,4 +51,4 @@ REA verificou anteriormente a renderização desktop e o fluxo móvel de menu, F
 
 Consulte `ANALISE.md` para IDs das evidências da referência e da interface. Em `referencias/` estão as capturas desktop e mobile. Não há integração com serviços privados do site de referência, nem reaproveitamento de seus logotipos, depoimentos ou imagens exclusivas.
 
-Captura remota, pagamentos, publicação de projetos, recuperação/verificação de e-mail e informações legais permanecem pendentes. Nenhuma implantação online corrigida é afirmada por este documento.
+Captura remota, pagamentos, publicação de projetos, recuperação/verificação de e-mail e informações legais permanecem pendentes. Cadastro e sessões foram verificados na hospedagem, mas isso não equivale a uma auditoria completa de produção.

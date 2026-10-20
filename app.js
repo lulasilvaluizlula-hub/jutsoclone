@@ -2,7 +2,7 @@ import { brand } from './brand.config.js';
 const $=s=>document.querySelector(s);
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 Object.entries(brand.colors).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k,v));
-const routeTitle={'/app':'Editor demonstrativo','/login':'Entrar','/register':'Criar conta'}[location.pathname]||'Da ideia à sua próxima página';
+const routeTitle={'/app':'Editor demonstrativo','/login':'Entrar','/register':'Criar conta'}[location.pathname.replace(/\/$/,'')]||'Da ideia à sua próxima página';
 document.title=brand.name+' — '+routeTitle;
 document.querySelector('meta[name="description"]').content=brand.description;
 const icon=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="${brand.colors.accent}"/><text x="32" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="44" fill="${brand.colors.background}">${esc(brand.name[0])}</text></svg>`;
