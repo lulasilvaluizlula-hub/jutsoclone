@@ -1,31 +1,46 @@
-# Integrações propostas
+# Integrações e hospedagem
 
-Estes contratos são um ponto de partida para serviços de produção. O servidor local já oferece uma conta fixa de teste por `/api/demo/login`, `/api/demo/session` e `/api/demo/logout`, sem serviços externos. A sessão é mantida na memória, com cookie HttpOnly/SameSite=Strict e duração máxima de oito horas. Os campos `brand.integrations` em `brand.config.js` continuam reservados para serviços futuros: preencher URLs não ativa contas de produção, captura, cobrança ou publicação.
+A interface e o editor são independentes da captura remota, cobrança e publicação de projetos. A autenticação tem um handler compartilhado entre o servidor Node.js local e Netlify Functions. As outras integrações descritas abaixo continuam propostas. Alterar URLs em `brand.integrations` não implementa um backend nem conecta automaticamente a interface a um novo provedor.
 
-## Contas — `authEndpoint`
+## Build e rotas públicas
 
-Proposta: base `/api/auth`. `POST /register` recebe `{name,email,password}`; `POST /login` recebe `{email,password}`; `POST /logout` encerra a sessão; `GET /session` retorna `{user:{id,name,email}}` ou 401. Sucesso de cadastro/acesso devolve usuário e sessão em cookie seguro HttpOnly. Erros usam `{error:{code,message}}`, sem expor detalhes internos.
+Após `npm install`, execute `npm run build` ou `node scripts/build.mjs`. O build gera `dist` somente com assets públicos. Não deve incluir `.env`, `.env.local`, `.data`, código de servidor ou documentação. `netlify.toml` publica `dist` e registra `netlify/functions` como diretório de funções.
 
-Para produção, faltam provedor ou armazenamento de contas, recuperação e verificação de e-mail, política de senhas, limitação de tentativas e conexão do cadastro. A tela de login já verifica a conta fixa de teste no servidor local; o cadastro público permanece desconectado. Nenhuma senha é guardada no navegador.
+As páginas `/login`, `/register` e `/app` têm arquivos `/rota/index.html` e regras `_redirects`. Essa combinação permite acesso direto e atualização de página sem depender de navegação prévia pela home. O 404 em https://serene-cuchufli-29657f.netlify.app/login foi confirmado no navegador. O projeto está sendo preparado para corrigir esse cenário; não há verificação online concluída da versão corrigida.
 
-## Captura remota — `cloneEndpoint`
+Na Netlify, use integração Git ou CLI com deploy das funções. Arrastar `dist` para o serviço publica a interface estática e o editor, mas não a API. Não anunciar cadastro/login como disponíveis nessa modalidade de envio.
 
-Proposta: base `/api/clone-jobs`. `POST /` autenticado recebe `{url}` e retorna 202 com `{id,status:"queued"}`. `GET /:id` retorna `{id,status,progress,projectId,error}`; estados: `queued`, `running`, `completed`, `failed`. Quando concluído, o servidor fornece um projeto pertencente ao usuário; assets e exportações precisam de endpoints de acesso autorizados próprios.
+## Contas — API implementada para Netlify Functions
 
-Faltam fila, trabalhadores de navegador isolados, armazenamento, propriedade dos projetos e tratamento de falhas. O servidor deve limitar destinos, redirecionamentos, tamanho e tempo de captura e bloquear acesso a redes internas. Só capturar conteúdos públicos ou autorizados, sem contornar controles de acesso. A URL da demo não inicia tarefa alguma.
+Rotas de autenticação:
 
-## Pagamento — `checkoutEndpoint`
+- `POST /api/auth/register`: cadastro público com nome, e-mail e senha.
+- `POST /api/auth/login`: entrada com e-mail e senha.
+- `GET /api/auth/session`: consulta da sessão atual.
+- `POST /api/auth/logout`: encerramento da sessão.
 
-Proposta: `POST /api/checkout` autenticado recebe `{planId}` e retorna `{checkoutUrl}`. Preços e plano são resolvidos no servidor; o navegador não decide o valor cobrado. O servidor recebe eventos assinados em `/api/billing/webhook`, processa-os de forma idempotente e atualiza os direitos da conta. O retorno visual do checkout não comprova pagamento.
+As rotas usam Netlify Functions. Contas e sessões persistem em `@netlify/blobs`, por `getStore` no escopo do site e consistência `strong`. O deploy deve disponibilizar as funções e seu contexto Netlify para que o armazenamento funcione. Credenciais ou arquivos locais de configuração não devem ser copiados para os assets públicos.
 
-Faltam provedor, credenciais, produtos/preços reais, URLs de retorno, eventos de pagamento e cancelamento, cobrança recorrente e definição comercial. Os planos exibidos são propostas; não há checkout ativo.
+O cadastro não exige, nesta versão, confirmação por e-mail. Verificação de endereço e recuperação de senha por e-mail permanecem pendentes; não anunciar esses recursos como disponíveis. A existência de uma conta não ativa captura remota, plano pago ou hospedagem de projetos.
 
-## Publicação — `hostingEndpoint`
+Localmente, `node server.mjs` executa o mesmo handler com armazenamento em `.data`, ignorado pelo Git. A conta legada de `.env.local` mantém login exclusivamente local. Nenhuma credencial deve constar na documentação, no repositório ou em `dist`.
 
-Proposta: base `/api/deployments`. `POST /` autenticado recebe `{projectId,domain?}` e retorna 202 com `{id,status:"queued"}`. `GET /:id` retorna `{id,status,url,error}`. Domínios próprios exigem verificação separada de propriedade e configuração DNS; o endereço público só deve aparecer após publicação concluída.
+Antes de considerar a implantação concluída, testar as rotas públicas por endereço direto e o ciclo cadastro → login → atualização/sessão → logout na URL final. Os testes da interface anteriores à correção não substituem essa verificação online.
 
-Faltam armazenamento, processo de publicação, provedor de hospedagem, TLS, gestão de domínio, autorização por projeto e operação de remoção. A aplicação atual não publica páginas. A exportação ZIP local funciona de forma independente dessas integrações.
+## Captura remota — contrato proposto
 
-## Antes de ativar
+Base sugerida: `/api/clone-jobs`. `POST /` autenticado recebe `{url}` e retorna 202 com `{id,status:"queued"}`. `GET /:id` retorna `{id,status,progress,projectId,error}`; estados: `queued`, `running`, `completed`, `failed`. Quando concluído, o servidor fornece um projeto pertencente ao usuário; assets e exportações exigem controle de acesso próprio.
 
-Definir políticas de acesso por usuário e limites de uso no servidor; manter credenciais fora dos arquivos públicos; testar respostas de erro e estados pendentes na interface; revisar privacidade, termos, contatos e condições comerciais. Publicação externa depende de autorização do responsável pela marca.
+Faltam fila, trabalhadores de navegador isolados, armazenamento de projetos, autorização, limites e conector da interface. O servidor deve bloquear destinos de rede interna e limitar redirecionamentos, tamanho e tempo. Capturar somente conteúdo público ou autorizado, sem contornar acessos. O editor atual não acessa sua URL de referência.
+
+## Pagamento — contrato proposto
+
+`POST /api/checkout` autenticado recebe `{planId}` e retorna `{checkoutUrl}`. Preços são resolvidos no servidor. Eventos assinados em `/api/billing/webhook` devem atualizar os direitos da conta com processamento idempotente; o retorno visual do checkout não comprova pagamento.
+
+Faltam provedor, credenciais, produtos/preços comerciais, URLs de retorno, tratamento de eventos, cancelamento e conector da interface. Os planos exibidos permanecem propostas demonstrativas.
+
+## Publicação de projetos — contrato proposto
+
+Base sugerida: `/api/deployments`. `POST /` autenticado recebe `{projectId,domain?}` e retorna 202 com `{id,status:"queued"}`. `GET /:id` retorna `{id,status,url,error}`. Domínios próprios exigem verificação de propriedade e DNS; a URL pública só deve ser apresentada após conclusão.
+
+Esta integração é diferente de hospedar a própria aplicação Jutsoclone na Netlify. Faltam armazenamento de projetos, processo de publicação, provedor, TLS/domínios, autorização, remoção e conector da interface. O editor não publica páginas. A exportação ZIP funciona localmente e independe dessas integrações.
