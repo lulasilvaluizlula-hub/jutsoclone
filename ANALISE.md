@@ -47,10 +47,10 @@ Checkout exige URL própria configurada. Sem ela, os botões de compra identific
 
 ## Verificações e pendências
 
-Nesta etapa, o encerramento dos testes registrou 32 verificações automatizadas aprovadas e um teste separado aprovado com Chrome real. A cobertura inclui autenticação, isolamento entre contas, persistência, páginas, configurações, captura/rede controlada, sanitização, ZIP, links migrados e ciclo de publicação/revogação com fixtures próprias. Isso não equivale a uma auditoria completa de segurança, acessibilidade ou compatibilidade de todos os sites.
+Nesta etapa, o encerramento dos testes registrou 33 verificações aprovadas, incluindo um teste com Chrome real. A cobertura inclui autenticação, isolamento entre contas, persistência, páginas, configurações, captura/rede controlada, sanitização, ZIP, links migrados e ciclo de publicação/revogação com fixtures próprias. Isso não equivale a uma auditoria completa de segurança, acessibilidade ou compatibilidade de todos os sites.
 
 A publicação salva snapshot independente, usa token aleatório e exige confirmação do usuário. Publicar novamente revoga o token anterior; há API de revogação. Páginas publicadas usam CSP com sandbox, scripts próprios autorizados por nonce e sem permissão de mesma origem. Nenhuma publicação real do alvo foi efetuada nesta etapa.
 
-Os testes anteriores da apresentação e do editor demonstrativo pertencem à versão anterior. A versão hospedada anterior teve login, sessão e edição verificados; a nova versão com renderização, múltiplas páginas e publicação ainda aguarda verificação no deploy final. Testes locais e uma captura REA de referência não comprovam entrega online da nova versão.
+Os testes anteriores da apresentação e do editor demonstrativo pertencem à versão anterior. A versão hospedada anterior teve login, sessão e edição verificados; a nova versão foi verificada na Netlify com importação renderizada da oferta autorizada e download de ZIP. Um projeto com duas páginas foi verificado localmente. O ZIP extraído abriu a página e o modal de compra, e a FAQ alternou no navegador. A publicação da oferta não foi acionada.
 
 Continuam pendentes: confirmação/recuperação de e-mail, cobrança/assinaturas, domínio personalizado, indicações, pixels de conversão e compatibilidade adicional com interações fora dos seletores implementados. Não houve acesso a backend privado, contorno de autenticação ou compra no site de referência.

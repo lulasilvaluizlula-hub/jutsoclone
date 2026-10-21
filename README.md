@@ -4,7 +4,7 @@ Aplicação própria em português para importar páginas públicas autorizadas,
 
 ## Executar
 
-Requer Node.js 22.16 ou superior. No Windows, a captura renderizada também exige Google Chrome oficial instalado em um dos caminhos usuais de `Program Files`. Na Netlify/Linux, o navegador usa `@sparticuz/chromium` e `playwright-core`.
+Requer Node.js 22.17 ou superior (ou 24+). No Windows, a captura renderizada também exige Google Chrome oficial instalado em um dos caminhos usuais de `Program Files`. Na Netlify/Linux, o navegador usa `@sparticuz/chromium` e `playwright-core`.
 
 ```powershell
 npm install
@@ -42,10 +42,12 @@ Verificação de e-mail, recuperação de senha por e-mail, planos pagos, cobran
 
 Conecte o repositório com `netlify.toml`: build `npm run build`, publicação `dist`, funções em `netlify/functions`. O build inclui somente arquivos públicos e entradas das rotas; documentação, `.data`, `.env` e código do servidor ficam fora de `dist`. Arrastar somente `dist` não instala Functions, contas, captura ou publicação.
 
-A versão anterior foi exercitada no endereço hospedado para login, sessão, captura do exemplo e edição. A nova versão com renderização, múltiplas páginas e publicação ainda precisa de verificação no deploy final; os testes locais não comprovam que essa versão já está online. O encerramento desta etapa registrou 32 testes automatizados aprovados, mais um teste separado de renderização com Chrome real. Consulte `ANALISE.md` para o escopo exato e as limitações.
+A versão anterior foi exercitada no endereço hospedado para login, sessão, captura do exemplo e edição. Em 21/10/2026 a nova versão foi verificada na Netlify com captura renderizada da oferta autorizada, edição no painel e download do ZIP. A captura preservou a página do produto e incorporou recursos. A publicação pública da oferta não foi acionada. Localmente também foi verificado projeto com duas páginas e modal/FAQ no ZIP extraído. O encerramento desta etapa registrou 33 testes aprovados, incluindo renderização com Chrome real. Consulte `ANALISE.md` para o escopo exato e as limitações.
 
 ## Personalizar
 
 Edite `brand.config.js` para marca, empresa, apresentação, logotipo, paleta, contatos e planos propostos. `logo: null` mantém o nome em texto. WhatsApp e e-mail não foram informados. O favicon fica em `favicon.svg`; metadados iniciais, em `index.html`. A paleta própria usa verde-lima, turquesa e grafite.
 
 Consulte `INTEGRACOES.md` para APIs e pendências. Use somente materiais próprios ou autorizados; recursos capturados de terceiros continuam sujeitos aos respectivos direitos. Os testes privados do alvo não são incorporados como material público do produto.
+
+A importação por URL permite incluir automaticamente até quatro páginas internas detectadas, com filtros de conta/checkout, além de adicionar páginas manualmente no editor.
