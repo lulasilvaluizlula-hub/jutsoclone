@@ -1,64 +1,56 @@
-# Análise pública e decisões — Jutsoclone
+# Análise e evidências — Jutsoclone
 
-Inspeção em 20/10/2026 de https://clonuxy.com/, com REA e navegador Chromium 155.0.8059.85. O projeto adapta a hierarquia e os padrões observáveis à identidade Jutsoclone, com textos e elementos visuais próprios.
+A reconstrução usa a estrutura e os comportamentos observáveis da referência como orientação, com identidade Jutsoclone e implementação própria. A análise distingue divulgação pública, navegação autenticada autorizada, captura renderizada de teste e funcionalidades efetivamente implementadas. Nenhuma etapa recuperou banco de dados, código privado ou lógica de servidor da origem.
 
-## Evidências REA
+## Evidências públicas iniciais do REA
 
-- Desktop, 1440 × 1000: `rea-desktop.json`, Evidence ID `ev_cb34d15cd2ab4edbcee25102e3b9f29ec2c07a814041b2e9de232cdaca63bd80`.
-- Mobile, 390 × 844: `rea-mobile.json`, Evidence ID `ev_c90e32816cc56541704d7cd840c151f4b4466f6800314a87be82c0d0edb42162`.
+Inspeção inicial de `https://clonuxy.com/`, em desktop e celular:
 
-As duas capturas contêm DOM, árvore de acessibilidade, screenshot, URL e eventos de rede. Os cenários básicos carregaram a página inicial e aguardaram sua renderização; não enviaram formulários nem realizaram compras. A indicação `complete` do REA descreve a completude da captura solicitada, não a cobertura de todo o produto.
+- Desktop 1440 × 1000: Evidence ID `ev_cb34d15cd2ab4edbcee25102e3b9f29ec2c07a814041b2e9de232cdaca63bd80`.
+- Mobile 390 × 844: Evidence ID `ev_c90e32816cc56541704d7cd840c151f4b4466f6800314a87be82c0d0edb42162`.
+- Planos e alternância da FAQ: Evidence ID `ev_4a3e722bab0e062fc81b116d7b574cbe65f2956da8cd0acd2e2479e9981c8356`.
+- Menus e páginas públicas de conta: Evidence ID `ev_7aa4942729f03c1cd66fbd1dc95ba5a2ca2bd72d9b7b6941a112975a094201ba`. Essa sessão registrou incompletude de eventos; não comprova ausência de erros ou cobertura integral da rede.
 
-## Observado no DOM e nos estilos públicos
+As capturas iniciais contêm DOM, acessibilidade, imagens e eventos de rede de seus próprios cenários. O estado `complete` significa que a captura solicitada terminou; não demonstra cobertura de todo o produto. Os testes públicos iniciais não enviaram formulários nem fizeram compras.
 
-A página inicial contém navegação fixa, apresentação principal com dois caminhos de ação, demonstração visual de um editor, sequência em três etapas, grade de recursos, comparação de abordagens, três opções comerciais, área explicitamente ilustrativa de depoimentos, perguntas frequentes, chamada final e rodapé. Os links de conta apontam para `/login` e `/register`, com parâmetros de plano em algumas chamadas. Alguns links institucionais do rodapé apontam apenas para `#`.
+A apresentação observada usa cabeçalho fixo, hero, demonstração de editor, etapas, recursos, comparação, planos, FAQ e chamada final. O CSS público usa fundo quase preto, branco, texto cinza-azulado e destaques violeta/fúcsia, largura próxima de 1200 px, cartões arredondados e gradientes. Foram declaradas Inter, Space Grotesk e JetBrains Mono. Há adaptações em 960 e 720 px, menu móvel e preferência por movimento reduzido. A identidade própria da Jutsoclone usa outra paleta.
 
-A referência usa fundo quase preto (`#050507`), branco para títulos, cinza azulado para texto secundário e violeta/fúcsia para destaque. O CSS declara Inter para texto e títulos principais, Space Grotesk para títulos de componentes e JetBrains Mono para exemplos técnicos. O conteúdo fica limitado a 1200 px, com seções amplas, cartões arredondados, bordas translúcidas, gradientes e luzes difusas. Títulos principais têm peso alto, caixa alta e itálico. Estes valores descrevem a referência; a implementação Jutsoclone usa uma identidade própria.
+Menu móvel, revelação de seções, animações ilustrativas e FAQ foram observáveis no JavaScript público. As animações da apresentação não comprovam captura ou compactação de páginas reais. Promessas comerciais e depoimentos ilustrativos não foram tratados como prova de clientes, pagamento ou desempenho.
 
-O JavaScript entregue publicamente inclui menu móvel, alteração do cabeçalho ao rolar, revelação de seções com IntersectionObserver, efeito de luz ao mover o ponteiro, faixa contínua, digitação automática e barras de progresso demonstrativas. A FAQ alterna um painel por vez e atualiza `aria-expanded`. O próprio código da apresentação produz as animações de captura e compactação; elas não provam processamento real de uma URL.
+## Área autenticada autorizada
 
-O CSS público contém adaptações abaixo de 960 e 720 px: menu recolhido, cartões em uma coluna, rodapé reorganizado, botões principais largos, barra lateral da ilustração escondida e redução de espaçamentos. Existe também regra para reduzir movimentos conforme a preferência do sistema. A captura mobile comprova acesso e renderização nesse tamanho; o teste de cada interação móvel deve ser registrado à parte.
+O usuário autorizou acesso à conta e um único clone de teste de página própria. A inspeção mostrou projetos, criação, editor em abas e restrições por plano. A interface informou consumo de uma das duas unidades disponíveis. Exportação paga, domínios e indicações não foram comprovados por esse teste e nenhuma compra foi feita.
 
-A rede da captura inicial mostra carregamento do documento, fontes públicas do Google, ícone da marca e telemetria Cloudflare. Não foi observado um pedido de captura de páginas remotas nesse cenário. Corpos de requisições e respostas não foram retidos.
+A referência gerou um link automaticamente ao criar o projeto de teste. Isso descreve o comportamento observado; não comprova sua implementação interna nem autoriza publicação automática na Jutsoclone. A implementação própria exige confirmação separada para publicar. Credenciais, endereço privado do projeto e identificadores de conta ou indicação não são incluídos nesta documentação.
 
-## Hipóteses e limites
+## Inspeção adicional do alvo autorizado
 
-A apresentação sugere um produto com projetos, edição visual, exportação, contas, planos e publicação. A eficácia dessas operações, as permissões por plano e o processamento de pagamento não são comprovados pela página de divulgação. Sua implementação interna, banco de dados e lógica privada não foram recuperados.
+As chamadas ao MCP REA conectado excederam o tempo de espera, incluindo uma espera de 450 segundos. Foi usado o REA real pela CLI como alternativa. O registro local de trabalho é `work/rea-offer-current.json`, com Evidence ID `ev_f0cb50df3185f562d7f88e27a1fba5014e5f3eb00f83386c2b0bfb9b9fa7026e`, em viewport móvel 390 × 844.
 
-A inspeção inicial limitou-se às páginas públicas e seus formulários, sem envio. Em uma etapa posterior, o usuário autorizou acesso autenticado e um único clone de teste de uma página própria, conforme registrado abaixo. Não foram contornados controles de acesso. As promessas de fidelidade de captura e os depoimentos ilustrativos não foram tratados como evidência operacional ou clientes reais.
+Essa evidência corresponde ao alvo autorizado de teste e não à recuperação de código privado. O arquivo completo e o conteúdo comercial/de cliente desse alvo permanecem fora do repositório público; não são redistribuídos como assets da Jutsoclone.
 
-## Reconstrução própria
+A observação do DOM e dos atributos públicos identificou FAQ, abertura/fechamento de modal de compra, popup de presente, botões de checkout, favoritos, galeria com etapas e seleção visual de kits. Foram usados apenas esses sinais observáveis para criar novos handlers; o JavaScript e o rastreamento originais não foram transplantados. O fluxo de compra final não foi acionado. Não foi verificada lógica de preço, pagamento ou tratamento de pedidos no servidor original.
 
-A versão Jutsoclone preserva a hierarquia da apresentação com identidade e textos próprios. A etapa atual acrescenta contas, painel e CRUD persistente de projetos por usuário, captura limitada de HTML/CSS público, editor de textos, links, imagens, vídeos, URLs e HTML, além de exportação ZIP. A captura não executa JavaScript e recursos externos podem permanecer dependentes da origem. Pagamento, domínios próprios, indicações e publicação de projetos continuam pendentes. Dados da marca ficam centralizados em `brand.config.js`; valores comerciais são propostas.
+## Captura e migração próprias
 
-## Verificação da etapa anterior da interface
+A implementação agora renderiza a página pública em um navegador isolado: Chrome oficial via Playwright no Windows e `@sparticuz/chromium` com Playwright em Linux/Netlify. As requisições passam pelo transporte controlado do servidor, com validação de URLs/DNS/redirecionamentos, bloqueio de redes privadas e limites de tempo, requisições e bytes. Isso permite capturar DOM produzido por JavaScript público; não fornece cookies ou credenciais da origem nem transfere suas contas ou serviços privados.
 
-Desktop local, 1440 × 1000: Evidence ID `ev_199c2160f12fc627c20b6f8606acdb90e07ac15bea55d5bf5d770d88861f5e63`. Renderização capturada sem eventos de console ou erros de página.
+No ensaio real do alvo autorizado, a captura gerou aproximadamente 2,17 MB de HTML, com 18 recursos incorporados. A inspeção contou 26 das 27 imagens com conteúdo incorporado, incluindo PNG/WebP; fontes também foram incorporadas. Um recurso SVG permaneceu externo; marcação SVG presente no DOM passa pela sanitização. Restaram recursos externos e avisos: esses números descrevem esse ensaio, não uma garantia de incorporação total de qualquer site. Vídeos, folhas, fontes ou imagens incompatíveis podem continuar dependentes da origem.
 
-Mobile local, 390 × 844: `referencias/testes-mobile-rea.json`, Evidence ID `ev_6c661c3397eb3318833876a46bac27844b98ba28c696f912ddf7e1f9559993a4`. Menu, âncora da FAQ, abertura de pergunta, navegação ao editor, edição do título, salvamento e acionamento da exportação concluíram seus passos sem eventos de console ou erros de página. Isso cobre esse fluxo, não todos os caminhos possíveis.
+Após renderizar, o sistema remove scripts originais e atributos de eventos ativos, desativa formulários e sanitiza o HTML. Handlers públicos reconhecidos viram marcadores seguros para o runtime próprio. Scripts de rastreamento e pixels da origem não são restaurados automaticamente, e não há integração de pixels de conversão configurada. Isso não constitui uma auditoria de todo recurso externo nem garantia de funcionamento offline.
 
-O navegador confirmou persistência do rascunho após salvar e recarregar. O REA cancela downloads por projeto; o teste móvel comprova o acionamento do botão, não a conclusão de download. A função real de geração do ZIP foi executada em Node e o resultado descompactado com .NET: `index.html`, `styles.css` e `LEIA-ME.txt` tiveram conteúdo idêntico ao esperado, incluindo UTF-8.
+Projetos têm até 20 páginas, 4 MB de HTML por página e 10 MB no conjunto. O corpo JSON aceita até 5,5 MB. Metadados sem HTML são retornados com `?meta=1`; o HTML da página selecionada é obtido separadamente. O editor permite edição e substituição de URLs em várias páginas. A exportação contém todas as páginas e reescreve links internos reconhecidos.
 
-Referências visuais estão em `referencias/original-desktop.png`, `referencias/original-mobile.png`, `referencias/jutsoclone-desktop.png` e `referencias/jutsoclone-mobile.png`. Nenhuma aprovação de produção ou publicação está implícita nesta análise.
+O runtime próprio suporta `details`, âncoras, controles de vídeo, acordeões com `aria-controls`/`aria-expanded` e marcadores reconhecidos de FAQ, modal, presente, checkout, favorito e navegação de slides. No padrão de produto observado, suporta `#productCarouselTrack`, seleção visual `.kit-btn[data-qty][data-price]`, swipe e zoom do exemplo. Seletores e marcadores são uma compatibilidade delimitada: não reproduzem JavaScript arbitrário, integrações privadas, autenticação ou sistemas de pedidos.
 
-## Interações públicas adicionais da referência
+Checkout exige URL própria configurada. Sem ela, os botões de compra identificados ficam indisponíveis. Selecionar um kit altera o estado visual e, quando encontrado, o preço no modal; não define parâmetros de quantidade do provedor de pagamento. O retorno é um link explícito configurado pelo proprietário. Pagamento e clique final de compra não foram testados.
 
-Evidence ID `ev_4a3e722bab0e062fc81b116d7b574cbe65f2956da8cd0acd2e2479e9981c8356`: navegação pela âncora de planos e abertura da segunda pergunta da FAQ concluídas. A captura final mostra a primeira pergunta fechada e a segunda aberta. A reconstrução usa o agrupamento nativo `details name="faq"` para preservar esse comportamento. Recortes de todas as evidências originais estão em `referencias/evidencias-originais-rea.json`; imagens são representadas ali por hash e tamanho.
+## Verificações e pendências
 
-Validações adicionais da aplicação, verificadas pelo navegador: bloqueio de formulário vazio, rejeição de e-mail sem `@`, mensagem de serviço desconectado após dados válidos e remoção do rascunho ao restaurar o exemplo. A interface possui rótulos nos campos, foco visível, link de pular ao conteúdo, menu com estado expandido e preferência por movimento reduzido. Não foi realizada auditoria completa com leitor de tela.
+Nesta etapa, o encerramento dos testes registrou 32 verificações automatizadas aprovadas e um teste separado aprovado com Chrome real. A cobertura inclui autenticação, isolamento entre contas, persistência, páginas, configurações, captura/rede controlada, sanitização, ZIP, links migrados e ciclo de publicação/revogação com fixtures próprias. Isso não equivale a uma auditoria completa de segurança, acessibilidade ou compatibilidade de todos os sites.
 
-Evidence ID `ev_7aa4942729f03c1cd66fbd1dc95ba5a2ca2bd72d9b7b6941a112975a094201ba`, registro `rea-interactions.json`: passos de menu e acesso às páginas públicas concluídos. `/login` apresenta e-mail e senha; `/register` apresenta nome, e-mail e senha. Nenhum formulário original foi enviado. A captura tem incompletude de eventos, embora os passos estejam concluídos; por isso não sustenta conclusão de ausência de erros nessa sessão nem cobertura integral da rede.
+A publicação salva snapshot independente, usa token aleatório e exige confirmação do usuário. Publicar novamente revoga o token anterior; há API de revogação. Páginas publicadas usam CSP com sandbox, scripts próprios autorizados por nonce e sem permissão de mesma origem. Nenhuma publicação real do alvo foi efetuada nesta etapa.
 
-## Observações autenticadas autorizadas
+Os testes anteriores da apresentação e do editor demonstrativo pertencem à versão anterior. A versão hospedada anterior teve login, sessão e edição verificados; a nova versão com renderização, múltiplas páginas e publicação ainda aguarda verificação no deploy final. Testes locais e uma captura REA de referência não comprovam entrega online da nova versão.
 
-Em etapa posterior, o usuário autorizou o login na referência e um único clone de teste de uma página própria. A navegação no navegador mostrou área de projetos, criação de novo projeto, editor organizado em abas e limites associados ao plano. A interface informou consumo de 1 das 2 unidades disponíveis após esse teste. A exportação ZIP ficou bloqueada no plano gratuito; não se verificou exportação paga nem foi realizada compra. Áreas de domínios e indicações também apresentaram restrições de acesso/plano.
-
-O serviço gerou automaticamente um link para o projeto de teste, sem clique explícito no comando de publicar. Essa observação descreve o efeito visto nesse teste e não autoriza concluir como são implementadas hospedagem, expiração ou privacidade do link. Endereço privado do projeto, identificadores de indicação, e-mail e credenciais foram omitidos.
-
-Essas observações autenticadas foram relatadas pela inspeção direta no navegador. Não há um novo Evidence ID REA fornecido para elas; não se deve atribuí-las aos IDs das capturas públicas anteriores. Os registros REA listados acima continuam válidos apenas para seus próprios cenários. A infraestrutura, banco de dados e código privado da referência não foram recuperados.
-
-## Limites da implementação atual e validação
-
-A reconstrução implementa seu próprio fluxo de projetos e captura estática, sem usar APIs privadas da referência. Conteúdo executado por JavaScript, autenticação da página de origem, pagamentos, funis dinâmicos e scripts de terceiros não são reproduzidos pela captura. Recursos externos podem ser requisitados à origem quando a página é visualizada; um ZIP não implica incorporação de todos os arquivos. Formulários e execução de scripts da origem são desativados na captura.
-
-Os testes anteriores documentados de menu, apresentação, rascunho e ZIP correspondem à versão anterior da interface. Não são evidência de teste de ponta a ponta dos novos fluxos de projetos, nem de deploy online atualizado. Os resultados novos precisam ser avaliados separadamente antes da entrega e da publicação.
+Continuam pendentes: confirmação/recuperação de e-mail, cobrança/assinaturas, domínio personalizado, indicações, pixels de conversão e compatibilidade adicional com interações fora dos seletores implementados. Não houve acesso a backend privado, contorno de autenticação ou compra no site de referência.

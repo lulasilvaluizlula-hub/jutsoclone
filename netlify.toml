@@ -8,6 +8,8 @@
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["@sparticuz/chromium", "playwright-core"]
+  included_files = ["node_modules/@sparticuz/chromium/bin/**"]
 
 [[headers]]
   for = "/*"

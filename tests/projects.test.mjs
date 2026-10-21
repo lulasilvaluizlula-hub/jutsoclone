@@ -7,7 +7,7 @@ import { createProjectsHandler } from '../lib/projects.mjs';
 import { createFileStore } from '../lib/file-store.mjs';
 import { createNetlifyStore } from '../lib/netlify-store.mjs';
 import { BlobsServer } from '@netlify/blobs/server';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHash } from 'node:crypto';
 import { validatePublicUrl, publicAddress, fetchPublic, sanitizeHtml, capturePublicPage } from '../lib/capture.mjs';
 const origin = 'https://jutsoclone.example';
 function req(route,method='GET',input,cookie,source=origin) { return new Request(origin+route,{method,headers:{Origin:source,...(input?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{})},...(input?{body:JSON.stringify(input)}:{})}); }
@@ -63,4 +63,62 @@ test('projetos e listagem funcionam pelo SDK Netlify com servidor Blobs oficial'
     const removed=await createProjectsHandler({store:store()})(req('/api/projects/'+project.id,'DELETE',null,cookie));assert.equal(removed.status,200);
     assert.deepEqual((await (await createProjectsHandler({store:store()})(req('/api/projects','GET',null,cookie))).json()).projects,[]);
   }finally{await server.stop();}
+});
+
+test('páginas múltiplas persistem, mantêm aliases e isolam proprietário',async()=>{
+  await mkdir('.data/tests',{recursive:true});const directory=await mkdtemp(path.resolve('.data/tests/pages-'));
+  const store=()=>createFileStore(directory),auth=createAuthHandler({store:store()});
+  const signUp=async email=>(await auth(req('/api/auth/register','POST',{name:'Multipágina',email,password:'PassTeste123!'}))).headers.get('set-cookie').split(';')[0];
+  const first=await signUp('pages@example.com'),second=await signUp('other-pages@example.com');
+  const captured=[];
+  const capture=async sourceUrl=>{captured.push(sourceUrl);return{html:'<h1>Página pública real</h1><script>evil()</script>',sourceUrl,warnings:['Captura estática de teste']};};
+  const handle=request=>createProjectsHandler({store:store(),capture})(request);
+  const created=await handle(req('/api/projects','POST',{title:'Site multipágina',sourceUrl:'https://example.com/inicio'},first));assert.equal(created.status,201);
+  let project=(await created.json()).project;const route='/api/projects/'+project.id,entryId=project.pages[0].id;
+  assert.equal(project.pages.length,1);assert.equal(project.html,project.pages[0].html);assert.equal(project.sourceUrl,project.pages[0].sourceUrl);assert.doesNotMatch(project.html,/<script/);
+  const added=await handle(req(route+'/pages','POST',{title:'Sobre',html:'<h1>Sobre meu negócio</h1><iframe></iframe>'},first));assert.equal(added.status,201);
+  const secondPage=(await added.json()).page;assert.equal(secondPage.title,'Sobre');assert.doesNotMatch(secondPage.html,/<iframe/);
+  const imported=await handle(req(route+'/pages','POST',{title:'Contato',sourceUrl:'https://example.com/contato'},first));assert.equal(imported.status,201);assert.equal(captured.length,2);
+  for(const [method,input] of [['GET',undefined],['PUT',{html:'Roubo'}],['DELETE',undefined]])assert.equal((await handle(req(route+'/pages/'+secondPage.id,method,input,second))).status,404);
+  assert.equal((await handle(req(route+'/pages','POST',{html:'Outro'},second))).status,404);
+  assert.equal((await handle(req(route+'/pages/'+secondPage.id,'PUT',{html:'Outro'},first,'https://attacker.example'))).status,403);
+  assert.equal((await handle(req(route+'/pages','POST',{html:'<h1>Ambígua</h1>',sourceUrl:'https://example.com'},first))).status,400);
+  assert.equal((await handle(req(route+'/pages/'+secondPage.id,'PUT',{html:null},first))).status,400);
+  assert.equal((await handle(req(route+'/pages/'+secondPage.id,'PUT',{title:'Sobre atualizado',html:'<h1>Novo texto</h1>'},first))).status,200);
+  project=(await (await handle(req(route,'GET',undefined,first))).json()).project;
+  assert.equal(project.pages[1].title,'Sobre atualizado');assert.match(project.pages[1].html,/Novo texto/);assert.equal(project.html,project.pages[0].html);
+  const list=(await (await handle(req('/api/projects','GET',undefined,first))).json()).projects;
+  assert.equal(list[0].html,undefined);assert.equal(list[0].owner,undefined);assert.equal(list[0].pages.length,3);assert.ok(list[0].pages.every(page=>page.html===undefined));
+  const saved=await handle(req(route,'PUT',{html:'<h1>Entrada pelo cliente antigo</h1>'},first));assert.equal(saved.status,200);
+  project=(await saved.json()).project;assert.equal(project.html,project.pages[0].html);assert.match(project.html,/cliente antigo/);
+  const removed=await handle(req(route+'/pages/'+entryId,'DELETE',undefined,first));assert.equal(removed.status,200);
+  project=(await removed.json()).project;assert.equal(project.pages[0].id,secondPage.id);assert.equal(project.html,project.pages[0].html);assert.match(project.html,/Novo texto/);
+  await handle(req(route+'/pages/'+project.pages[1].id,'DELETE',undefined,first));
+  assert.equal((await handle(req(route+'/pages/'+secondPage.id,'DELETE',undefined,first))).status,409);
+});
+
+test('configurações de checkout e retorno validam URL, persistem e aceitam limpeza',async()=>{
+  await mkdir('.data/tests',{recursive:true});const directory=await mkdtemp(path.resolve('.data/tests/settings-'));
+  const store=()=>createFileStore(directory),auth=createAuthHandler({store:store()});
+  const account=await auth(req('/api/auth/register','POST',{name:'Configurações',email:'settings@example.com',password:'PassTeste123!'}));const cookie=account.headers.get('set-cookie').split(';')[0];
+  const handle=request=>createProjectsHandler({store:store()})(request);
+  const created=await handle(req('/api/projects','POST',{title:'Meu checkout',html:'<h1>Oferta própria</h1>'},cookie));const {project}=await created.json(),route='/api/projects/'+project.id;
+  const settings={checkoutUrl:'https://pagamento.example.com/oferta',backRedirectUrl:'https://example.com/voltar'};
+  assert.equal((await handle(req(route,'PUT',{settings},cookie))).status,200);
+  assert.deepEqual((await (await handle(req(route,'GET',undefined,cookie))).json()).project.settings,settings);
+  for(const badUrl of ['javascript:alert(1)','http://127.0.0.1/','https://user:password@example.com','file:///tmp/test'])assert.equal((await handle(req(route,'PUT',{settings:{checkoutUrl:badUrl}},cookie))).status,400);
+  assert.equal((await handle(req(route,'PUT',{settings:{checkoutUrl:null}},cookie))).status,400);
+  assert.equal((await handle(req(route,'PUT',{settings:'invalid'},cookie))).status,400);
+  const cleared=await handle(req(route,'PUT',{settings:{checkoutUrl:''}},cookie));assert.equal(cleared.status,200);assert.deepEqual((await cleared.json()).project.settings,{...settings,checkoutUrl:''});
+});
+
+test('projeto legado sem páginas é normalizado sem perder HTML ou proprietário',async()=>{
+  await mkdir('.data/tests',{recursive:true});const directory=await mkdtemp(path.resolve('.data/tests/legacy-pages-'));
+  const store=createFileStore(directory),auth=createAuthHandler({store});const email='legacy@example.com';
+  const account=await auth(req('/api/auth/register','POST',{name:'Legado',email,password:'PassTeste123!'}));const cookie=account.headers.get('set-cookie').split(';')[0];
+  const owner=createHash('sha256').update(email).digest('hex'),id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',timestamp=new Date().toISOString();
+  await store.setJSON('projects/'+owner+'/'+id,{id,owner,title:'Antigo',html:'<h1>Texto antigo</h1>',sourceUrl:'https://example.com/',warnings:['Antigo'],createdAt:timestamp,updatedAt:timestamp});
+  const handle=createProjectsHandler({store}),route='/api/projects/'+id;
+  const read=await handle(req(route,'GET',undefined,cookie));assert.equal(read.status,200);let project=(await read.json()).project;assert.equal(project.pages[0].id,id);assert.equal(project.pages[0].html,project.html);
+  const saved=await handle(req(route,'PUT',{settings:{backRedirectUrl:'https://example.com/voltar'}},cookie));assert.equal(saved.status,200);project=(await saved.json()).project;assert.equal(project.pages.length,1);assert.equal(project.html,'<h1>Texto antigo</h1>');
 });

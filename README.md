@@ -1,10 +1,10 @@
 # Jutsoclone
 
-Implementação própria em português, inspirada na organização e nos comportamentos observados da referência. Interface HTML/CSS/JavaScript, servidor Node.js e Netlify Functions. A versão inclui contas, projetos persistentes, captura estática limitada, editor e exportação ZIP. Pagamentos, domínios próprios e indicações continuam pendentes.
+Aplicação própria em português para importar páginas públicas autorizadas, editar projetos com várias páginas, exportar ZIP e publicar um snapshot por confirmação explícita. Usa HTML/CSS/JavaScript, Node.js, Netlify Functions e Netlify Blobs. A interface e o runtime de interação são próprios; código privado, contas e serviços da origem não são transferidos.
 
 ## Executar
 
-Requer Node.js 22.16 ou superior. Em um novo clone:
+Requer Node.js 22.16 ou superior. No Windows, a captura renderizada também exige Google Chrome oficial instalado em um dos caminhos usuais de `Program Files`. Na Netlify/Linux, o navegador usa `@sparticuz/chromium` e `playwright-core`.
 
 ```powershell
 npm install
@@ -12,32 +12,40 @@ npm run build
 node server.mjs
 ```
 
-Abra http://127.0.0.1:4173. Rotas: `/`, `/login`, `/register`, `/app` (demo), `/projects`, `/novo`, `/editor?id=ID`, `/planos`, `/dominios` e `/indique`. Para encerrar o servidor, pressione Ctrl+C. Para os testes automatizados disponíveis: `npm test`.
+Abra `http://127.0.0.1:4173`. Rotas: `/`, `/login`, `/register`, `/app`, `/projects`, `/novo`, `/editor?id=ID`, `/planos`, `/dominios` e `/indique`. `exemplo.html` é uma página estática original da marca para experimentar a importação. Encerre o servidor com Ctrl+C. Execute `npm test` para os testes automatizados.
 
-## Contas e projetos
+## Importar, editar e exportar
 
-Cadastre uma conta para criar, listar, abrir e editar seus projetos. A API também oferece exclusão. O painel e a API persistem os projetos por usuário. É possível começar com HTML próprio ou solicitar uma captura de página pública autorizada. No editor, ajuste textos, links, imagens, vídeos, URLs e HTML, salve o projeto e exporte o ZIP.
+Cadastre sua conta, abra **Novo projeto** e forneça uma URL pública autorizada ou HTML próprio. A captura renderiza JavaScript em navegador isolado antes de produzir um snapshot editável. Tenta incorporar imagens, fontes e estilos dentro dos limites disponíveis; recursos bloqueados, pesados ou incompatíveis são informados nos avisos da página.
 
-A captura importa HTML/CSS estático; não executa JavaScript nem acessa contas, formulários ou serviços privados da origem. Páginas dependentes de JavaScript podem não ser compatíveis. Imagens e outros recursos podem continuar externos: a exportação não deve ser tratada como cópia integral independente da origem. Revise os avisos de cada captura e use somente materiais próprios ou autorizados. O editor não publica automaticamente seu projeto.
+No editor, adicione ou selecione páginas, altere textos, links, imagens, vídeos, URLs e HTML, e salve. A substituição de URLs percorre as páginas do projeto. **Baixar todas em ZIP** exporta a entrada como `index.html`, as demais páginas em arquivos separados e um `LEIA-ME.txt`. Links reconhecidos entre páginas importadas são reescritos para os arquivos locais. Recursos não incorporados continuam dependendo de seus endereços externos.
 
-O cadastro ainda não tem confirmação ou recuperação de senha por e-mail. Na Netlify, contas, sessões e projetos usam Netlify Blobs persistente; localmente, os dados ficam em `.data`, ignorado pelo Git. A conta legada configurada em `.env.local` é exclusivamente local. Não publique esses arquivos nem compartilhe credenciais.
+Limites: 20 páginas por projeto, 4 MB de HTML por página, 10 MB de HTML no conjunto e corpo JSON de até 5,5 MB. Requisições com `?meta=1` retornam metadados sem duplicar o HTML; o editor carrega separadamente a página selecionada. Esses limites não garantem compatibilidade com toda página ou serviço externo.
 
-## Hospedar na Netlify
+A captura não transfere scripts originais para a versão salva. A opção de testar interações e os arquivos exportados/publicados usam um runtime próprio, com suporte delimitado a âncoras, `details`, acordeões com atributos de acessibilidade e marcadores reconhecidos de FAQ, modal de compra, galeria, swipe, zoom, favorito, seleção visual de kit e controles de vídeo. Isso não reproduz JavaScript arbitrário nem a lógica privada da origem.
 
-`npm run build` executa `node scripts/build.mjs` e gera `dist` apenas com assets públicos. `.env`, `.env.local`, `.data`, servidor e documentação ficam fora da pasta publicada. `netlify.toml` define a publicação de `dist` e as funções em `netlify/functions`. Há regras `_redirects` e arquivos próprios para acesso direto a `/login`, `/register` e `/app`.
+## Checkout e publicação
 
-Use integração Git ou CLI da Netlify com envio das funções. Arrastar `dist` publica somente a interface estática; não instala as APIs de contas, projetos e captura. O fluxo completo exige Functions e Blobs.
+Em **Configurações**, informe seu próprio `checkoutUrl` e, opcionalmente, `backRedirectUrl`. Botões reconhecidos como compra não reutilizam o checkout original: sem destino próprio configurado, ficam indisponíveis. Configurar uma URL não cria cobrança, assinatura ou processamento de pagamento. A quantidade selecionada no exemplo não altera automaticamente os parâmetros de um checkout externo. O clique final de compra não foi executado nos testes.
 
-Foi confirmado no navegador um 404 em https://serene-cuchufli-29657f.netlify.app/login antes da correção de hospedagem. Em 21/10/2026, a versão atual foi verificada na Netlify: acesso com conta de teste, sessão persistente, listagem, captura de exemplo próprio por URL, edição de texto, gravação e releitura após recarregar. O ZIP baixado foi aberto e continha a alteração. Layout mobile de 390px sem overflow horizontal. Os 10 testes automatizados passaram. O navegador registrou um erro de MutationObserver sem origem atribuída; esse código não está nos módulos próprios e não impediu os fluxos testados.
+**Publicar projeto** abre uma confirmação separada. Após confirmação, o servidor salva um snapshot e fornece um endereço público em `/p/TOKEN/`. Não há publicação automática ao importar ou salvar. Editar o projeto não altera um snapshot já publicado; publicar novamente gera outro token e revoga o anterior. A API permite revogar a publicação. Publicação usa páginas isoladas por CSP e um runtime próprio; domínio personalizado continua pendente.
+
+Nenhuma publicação real do alvo de referência foi efetuada nesta etapa. Os testes de publicação usam apenas fixtures próprias.
+
+## Contas e dados
+
+Contas, sessões, projetos e snapshots usam Netlify Blobs no escopo do site, com consistência `strong`. Localmente, os dados ficam em `.data`, ignorado pelo Git. A configuração legada de `.env.local` vale exclusivamente para o ambiente local. Não copie configurações privadas, dados locais ou credenciais para o repositório ou `dist`.
+
+Verificação de e-mail, recuperação de senha por e-mail, planos pagos, cobrança recorrente, domínios personalizados e programa de indicações continuam pendentes. Scripts de rastreamento e pixels da origem não são restaurados automaticamente; não há integração de pixels de conversão nesta versão.
+
+## Netlify
+
+Conecte o repositório com `netlify.toml`: build `npm run build`, publicação `dist`, funções em `netlify/functions`. O build inclui somente arquivos públicos e entradas das rotas; documentação, `.data`, `.env` e código do servidor ficam fora de `dist`. Arrastar somente `dist` não instala Functions, contas, captura ou publicação.
+
+A versão anterior foi exercitada no endereço hospedado para login, sessão, captura do exemplo e edição. A nova versão com renderização, múltiplas páginas e publicação ainda precisa de verificação no deploy final; os testes locais não comprovam que essa versão já está online. O encerramento desta etapa registrou 32 testes automatizados aprovados, mais um teste separado de renderização com Chrome real. Consulte `ANALISE.md` para o escopo exato e as limitações.
 
 ## Personalizar
 
-Edite `brand.config.js` para nome, empresa, apresentação, logotipo, paleta, contatos e planos propostos. `logo: null` mantém o nome em texto. WhatsApp e e-mail não foram informados. O favicon está em `favicon.svg`; metadados iniciais estão em `index.html`. A paleta usa verde-lima, turquesa e grafite.
+Edite `brand.config.js` para marca, empresa, apresentação, logotipo, paleta, contatos e planos propostos. `logo: null` mantém o nome em texto. WhatsApp e e-mail não foram informados. O favicon fica em `favicon.svg`; metadados iniciais, em `index.html`. A paleta própria usa verde-lima, turquesa e grafite.
 
-Os campos de integrações não implementam um servidor por si só. Consulte `INTEGRACOES.md`. Os planos comerciais são propostas e não têm checkout ativo.
-
-## Evidências e limites
-
-Leia `ANALISE.md` para observações da referência, limites e IDs REA disponíveis. As capturas e testes antigos da apresentação/editor demonstrativo não comprovam, por si, os novos fluxos autenticados. Não foram recuperados código-fonte privado, banco de dados ou lógica de servidor da referência. Não foram reutilizados logotipos, depoimentos ou imagens exclusivas da referência.
-
-Permanecem pendentes: captura com execução de JavaScript, pagamento/assinaturas, domínios próprios, indicações, publicação de projetos e verificação/recuperação de e-mail. Nenhuma publicação adicional é autorizada por este documento.
+Consulte `INTEGRACOES.md` para APIs e pendências. Use somente materiais próprios ou autorizados; recursos capturados de terceiros continuam sujeitos aos respectivos direitos. Os testes privados do alvo não são incorporados como material público do produto.

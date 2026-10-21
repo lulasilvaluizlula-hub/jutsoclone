@@ -1,62 +1,81 @@
-# Integrações e hospedagem
+# Integrações, APIs e hospedagem
 
-Contas e projetos têm handlers compartilhados entre o servidor Node.js local e Netlify Functions. A captura atual importa apenas HTML/CSS público estático. Cobrança, domínios, indicações e publicação de projetos continuam pendentes. Alterar URLs em `brand.integrations` não implementa um backend nem conecta automaticamente a interface a um novo provedor.
+A aplicação tem backend próprio em Node.js e Netlify Functions. Autenticação, projetos, páginas, captura renderizada, exportação e publicação compartilham Netlify Blobs no deploy e armazenamento `.data` no servidor local. Alterar URLs em `brand.integrations` não cria integrações por si só.
 
-## Build e rotas públicas
+## Executar e hospedar
 
-Após `npm install`, execute `npm run build` ou `node scripts/build.mjs`. O build gera `dist` somente com assets públicos. Não deve incluir `.env`, `.env.local`, `.data`, código de servidor ou documentação. `netlify.toml` publica `dist` e registra `netlify/functions` como diretório de funções.
+Use Node.js 22.16 ou superior, `npm install`, `npm run build` e `node server.mjs`. No Windows, a captura real exige Chrome oficial em `Program Files`; em Linux/Netlify, usa `@sparticuz/chromium` com `playwright-core`.
 
-As páginas `/login`, `/register` e `/app` têm arquivos `/rota/index.html` e regras `_redirects`. Essa combinação permite acesso direto e atualização de página sem depender de navegação prévia pela home. O 404 em https://serene-cuchufli-29657f.netlify.app/login foi confirmado no navegador. O projeto está sendo preparado para corrigir esse cenário; não há verificação online concluída da versão corrigida.
+`netlify.toml` define build `npm run build`, pasta pública `dist` e funções em `netlify/functions`. Use integração Git ou CLI com envio de funções. Arrastar apenas `dist` não instala APIs ou armazenamento. O build exclui `.env`, `.env.local`, `.data`, servidor e documentação. As rotas da aplicação têm entradas estáticas e rewrites para acesso direto.
 
-Na Netlify, use integração Git ou CLI com deploy das funções. Arrastar `dist` publica somente a interface estática; não instala as APIs de autenticação, projetos e captura. O fluxo completo exige deploy com funções.
+A verificação online da versão nova ainda está pendente. Após o deploy, testar cadastro/login/sessão/logout, rotas diretas, captura, editor, múltiplas páginas, ZIP e publicação apenas de material próprio autorizado. Testes locais não demonstram que o código atualizado já está na hospedagem.
 
-## Contas — API implementada para Netlify Functions
+## Contas
 
-Rotas de autenticação:
+- `POST /api/auth/register`: nome, e-mail e senha.
+- `POST /api/auth/login`: e-mail e senha.
+- `GET /api/auth/session`: sessão atual.
+- `POST /api/auth/logout`: revoga a sessão.
 
-- `POST /api/auth/register`: cadastro público com nome, e-mail e senha.
-- `POST /api/auth/login`: entrada com e-mail e senha.
-- `GET /api/auth/session`: consulta da sessão atual.
-- `POST /api/auth/logout`: encerramento da sessão.
+Contas e sessões usam armazenamento no escopo do site com consistência `strong`. Sessões usam cookie HttpOnly; alterações exigem origem autorizada. No ambiente local, a configuração legada de `.env.local` não cria uma conta de produção. Não publique arquivos privados ou credenciais.
 
-As rotas usam Netlify Functions. Contas e sessões persistem em `@netlify/blobs`, por `getStore` no escopo do site e consistência `strong`. O deploy deve disponibilizar as funções e seu contexto Netlify para que o armazenamento funcione. Credenciais ou arquivos locais de configuração não devem ser copiados para os assets públicos.
+Verificação de e-mail e recuperação de senha por e-mail não estão integradas. Autenticar-se não ativa pagamento, domínio próprio ou plano comercial.
 
-O cadastro não exige, nesta versão, confirmação por e-mail. Verificação de endereço e recuperação de senha por e-mail permanecem pendentes; não anunciar esses recursos como disponíveis. A conta permite acesso aos projetos e à captura estática implementada, mas não ativa plano pago, domínio ou hospedagem de projetos.
+## Projetos e páginas
 
-Localmente, `node server.mjs` executa o mesmo handler com armazenamento em `.data`, ignorado pelo Git. A conta legada de `.env.local` mantém login exclusivamente local. Nenhuma credencial deve constar na documentação, no repositório ou em `dist`.
+- `GET /api/projects`: lista os projetos da conta, sem HTML e sem proprietário nas respostas de resumo.
+- `POST /api/projects`: cria projeto com `{title, sourceUrl}` pública autorizada ou `{title, html}` próprio.
+- `GET /api/projects/:id`: carrega um projeto da conta.
+- `PUT /api/projects/:id`: atualiza título, HTML da entrada ou `{settings:{checkoutUrl,backRedirectUrl}}`.
+- `DELETE /api/projects/:id`: exclui o projeto.
+- `POST /api/projects/:id/pages`: adiciona `{title, sourceUrl}` ou `{title, html}`.
+- `GET /api/projects/:id/pages`: consulta páginas da conta.
+- `GET /api/projects/:id/pages/:pageid`: carrega `{page}` com o HTML selecionado.
+- `PUT /api/projects/:id/pages/:pageid`: atualiza `{title?,html?}`.
+- `DELETE /api/projects/:id/pages/:pageid`: remove página quando existir outra no projeto.
 
-Antes de considerar a implantação concluída, testar as rotas públicas por endereço direto e o ciclo cadastro → login → atualização/sessão → logout na URL final. Os testes da interface anteriores à correção não substituem essa verificação online.
+Use `?meta=1` nas operações de projeto e mutações de página para receber apenas metadados, sem repetir o HTML grande nas respostas. Carregue o HTML pelo endpoint específico da página. `html`, `sourceUrl` e `warnings` no formato legado espelham a primeira página. Excluir a entrada promove a seguinte.
 
-## Projetos e captura estática — implementados
+Limites: 20 páginas, 4 MB de HTML por página, 10 MB de HTML por projeto e JSON de até 5,5 MB. O tamanho efetivo do JSON inclui escapes e outros campos. Contas diferentes não podem carregar ou alterar os projetos umas das outras.
 
-A API autenticada usa `/api/projects`:
+## Captura renderizada e recursos
 
-- `GET /api/projects`: lista os projetos da conta.
-- `POST /api/projects`: cria um projeto com título e HTML próprio ou `sourceUrl` pública.
-- `GET /api/projects/:id`: carrega um projeto pertencente à conta.
-- `PUT /api/projects/:id`: salva título e HTML editados.
-- `DELETE /api/projects/:id`: exclui o projeto da conta.
+A captura executa o JavaScript público em navegador isolado e transforma o DOM renderizado em HTML editável. Requisições de rede são atendidas por um transporte Node controlado, com DNS/conexão fixados, validação a cada redirecionamento e bloqueio de endereços privados. Pedidos não autorizados, métodos de alteração, WebSockets, service workers e janelas adicionais são bloqueados. Tempo e recursos têm limites; páginas sem conteúdo suficiente ou incompatíveis retornam erro em vez de uma falsa captura concluída.
 
-A sessão é validada pelo leitor compartilhado de autenticação. Projetos são separados por proprietário no armazenamento; usam Netlify Blobs no deploy e armazenamento local em `.data` no servidor Node.js. Alterações exigem origem autorizada.
+O empacotamento tenta incorporar imagens, CSS e fontes permitidos. No ensaio privado autorizado, foram incorporados 18 recursos e a inspeção contou 26 de 27 imagens incorporadas; isso não garante captura total. Vídeos ou outros recursos podem permanecer externos. Examine os avisos por página e os direitos sobre os materiais.
 
-A captura recebe uma página HTTP/HTTPS pública em portas padrão. Valida endereços e redirecionamentos, bloqueia redes internas e aplica limites de tempo e tamanho. Importa HTML e um conjunto limitado de folhas CSS; não executa JavaScript, não utiliza credenciais da origem e não acessa áreas restritas. Scripts, atributos de eventos e formulários ativos são removidos ou desativados. Páginas dependentes de JavaScript podem ser recusadas. Imagens e outros recursos podem permanecer externos, inclusive no ZIP exportado.
+Scripts de origem e atributos ativos de eventos são removidos depois da renderização; formulários ficam desativados. Marcadores conhecidos alimentam somente o runtime próprio. Rastreamento e pixels não são restaurados automaticamente. A captura não transfere login, credenciais, banco de dados, APIs privadas ou servidor da origem.
 
-O editor permite ajustar textos, links, imagens, vídeos, URLs e HTML. O salvamento aplica novamente as regras de sanitização. A exportação não equivale a publicar a página nem garante que todos os assets da origem estejam incorporados. Captura com navegador executando JavaScript, tarefas assíncronas e empacotamento integral de assets exigiriam implementação adicional.
+## Exportação e interações
 
-## Pagamento — contrato proposto
+`GET /api/projects/:id/export` exige sessão e retorna ZIP real, transmitido em blocos de 64 KB. Inclui `index.html`, arquivos das outras páginas e `LEIA-ME.txt`. Links internos reconhecidos apontam para os arquivos exportados. Incorporar parte dos recursos não elimina dependências externas nem cria backend de pagamento ou autenticação.
 
-`POST /api/checkout` autenticado recebe `{planId}` e retorna `{checkoutUrl}`. Preços são resolvidos no servidor. Eventos assinados em `/api/billing/webhook` devem atualizar os direitos da conta com processamento idempotente; o retorno visual do checkout não comprova pagamento.
+O runtime próprio suporta âncoras, `details`, acordeões com acessibilidade, controles de vídeo e marcadores delimitados de FAQ, modal de compra, popup, favorito, galeria, swipe, zoom e seleção visual de kit do padrão observado. Não é execução do JavaScript original nem compatibilidade universal. A seleção de kit não acrescenta automaticamente quantidade à URL do checkout.
 
-Faltam provedor, credenciais, produtos/preços comerciais, URLs de retorno, tratamento de eventos, cancelamento e conector da interface. Os planos exibidos permanecem propostas demonstrativas.
+`settings.checkoutUrl` precisa ser um destino próprio HTTP/HTTPS público. Botões identificados como compra usam esse destino; sem configuração, ficam indisponíveis e não reutilizam o checkout original. `settings.backRedirectUrl` adiciona um link explícito de retorno; não manipula o histórico do editor. Configurar esses destinos não conecta processamento de pagamento. Não houve clique final de compra nos testes.
 
-## Publicação de projetos — contrato proposto
+## Publicação por snapshot
 
-Base sugerida: `/api/deployments`. `POST /` autenticado recebe `{projectId,domain?}` e retorna 202 com `{id,status:"queued"}`. `GET /:id` retorna `{id,status,url,error}`. Domínios próprios exigem verificação de propriedade e DNS; a URL pública só deve ser apresentada após conclusão.
+- `GET /api/projects/:id/publish`: consulta o endereço publicado ou `null`.
+- `POST /api/projects/:id/publish`: com sessão e origem autorizada, cria snapshot e retorna `{url,token}`.
+- `DELETE /api/projects/:id/publish`: revoga a publicação da conta.
+- `GET /p/:token/`: entrada pública do snapshot.
+- `GET /p/:token/:pageid`: outra página publicada.
 
-Esta integração é diferente de hospedar a própria aplicação Jutsoclone na Netlify. Faltam armazenamento de projetos, processo de publicação, provedor, TLS/domínios, autorização, remoção e conector da interface. O editor não publica páginas. A exportação ZIP funciona localmente e independe dessas integrações.
+O editor pede confirmação separada antes do POST. Importar, editar, salvar ou exportar não publica automaticamente. Publicar novamente substitui a referência privada e revoga o token anterior. Alterações posteriores no projeto não atualizam um snapshot existente sem nova publicação. A API permite revogar o snapshot mesmo após excluir o projeto, enquanto sua referência privada existir; excluir o projeto não deve ser confundido com revogação da publicação.
 
-## Domínios e indicações
+As páginas públicas não expõem registros de conta ou campos de proprietário. Usam `Cache-Control: no-store`, `nosniff`, referrer restrito e CSP com sandbox sem `allow-same-origin`; apenas o runtime próprio recebe nonce de script. O snapshot publicado aceita até 10 MB serializados. Isso é diferente de hospedar o aplicativo Jutsoclone e de conectar domínio personalizado.
 
-Ainda não há integração de domínio próprio, gestão DNS ou programa de indicações. As restrições observadas na referência não foram contornadas nem convertidas em integrações privadas. Para implementar, faltam regras comerciais, armazenamento e autorização, provedor DNS/publicação e mecanismos de atribuição e eventual remuneração.
+Os testes de publicação usaram somente fixtures próprias. Nenhuma publicação real do alvo de referência foi realizada nesta etapa.
 
-A geração automática de link observada no único teste autorizado da referência não foi tomada como autorização para publicação automática na Jutsoclone. O editor desta implementação não publica projetos.
+## Serviços ainda pendentes
+
+Cobrança recorrente e planos comerciais exigem provedor, produtos/preços do servidor, credenciais, checkout, retorno e webhooks assinados/idempotentes. Um link de checkout do projeto não implementa assinatura da plataforma nem comprova pagamento.
+
+Domínio próprio exige configuração de provedor, comprovação de propriedade, DNS, TLS e associação autorizada ao snapshot. O endereço `/p/TOKEN/` não equivale a essa integração.
+
+Indicações exigem regras comerciais, atribuição, persistência e eventual remuneração. Pixels de conversão exigem configuração própria e tratamento adequado de consentimento; scripts da referência não são copiados como integração. Verificação/recuperação de e-mail exige provedor e fluxo com tokens. Nenhum desses recursos deve ser anunciado como concluído.
+
+## Validação desta etapa
+
+Foram registrados 32 testes automatizados aprovados e um teste separado aprovado com Chrome real. O conjunto cobre contratos e cenários específicos; não substitui verificação no deploy novo nem auditoria integral. Evidências REA, limites observados e distinção entre testes antigos e atuais estão em `ANALISE.md`. Credenciais e registros privados completos do alvo não integram esta documentação ou o repositório.
