@@ -12,11 +12,11 @@ npm run build
 node server.mjs
 ```
 
-Abra http://127.0.0.1:4173. Rotas: `/`, `/login`, `/register` e `/app`. Para encerrar o servidor, pressione Ctrl+C. Para os testes automatizados disponíveis: `npm test`.
+Abra http://127.0.0.1:4173. Rotas: `/`, `/login`, `/register`, `/app` (demo), `/projects`, `/novo`, `/editor?id=ID`, `/planos`, `/dominios` e `/indique`. Para encerrar o servidor, pressione Ctrl+C. Para os testes automatizados disponíveis: `npm test`.
 
 ## Contas e projetos
 
-Cadastre uma conta para criar, listar, abrir, editar e excluir seus projetos. O painel e a API persistem os projetos por usuário. É possível começar com HTML próprio ou solicitar uma captura de página pública autorizada. No editor, ajuste textos, links, imagens, vídeos, URLs e HTML, salve o projeto e exporte o ZIP.
+Cadastre uma conta para criar, listar, abrir e editar seus projetos. A API também oferece exclusão. O painel e a API persistem os projetos por usuário. É possível começar com HTML próprio ou solicitar uma captura de página pública autorizada. No editor, ajuste textos, links, imagens, vídeos, URLs e HTML, salve o projeto e exporte o ZIP.
 
 A captura importa HTML/CSS estático; não executa JavaScript nem acessa contas, formulários ou serviços privados da origem. Páginas dependentes de JavaScript podem não ser compatíveis. Imagens e outros recursos podem continuar externos: a exportação não deve ser tratada como cópia integral independente da origem. Revise os avisos de cada captura e use somente materiais próprios ou autorizados. O editor não publica automaticamente seu projeto.
 
@@ -28,7 +28,7 @@ O cadastro ainda não tem confirmação ou recuperação de senha por e-mail. Na
 
 Use integração Git ou CLI da Netlify com envio das funções. Arrastar `dist` publica somente a interface estática; não instala as APIs de contas, projetos e captura. O fluxo completo exige Functions e Blobs.
 
-Foi confirmado no navegador um 404 em https://serene-cuchufli-29657f.netlify.app/login antes da correção de hospedagem. Este documento não afirma teste online concluído da versão atual. Após o deploy, verificar rotas diretas, cadastro, sessão, logout e CRUD de projetos na URL final.
+Foi confirmado no navegador um 404 em https://serene-cuchufli-29657f.netlify.app/login antes da correção de hospedagem. Em 21/10/2026, a versão atual foi verificada na Netlify: acesso com conta de teste, sessão persistente, listagem, captura de exemplo próprio por URL, edição de texto, gravação e releitura após recarregar. O ZIP baixado foi aberto e continha a alteração. Layout mobile de 390px sem overflow horizontal. Os 10 testes automatizados passaram. O navegador registrou um erro de MutationObserver sem origem atribuída; esse código não está nos módulos próprios e não impediu os fluxos testados.
 
 ## Personalizar
 

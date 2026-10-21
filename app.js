@@ -41,8 +41,8 @@ if($('#auth-form')){
   });
 }
 async function showDemoAccount(){
-  try{const {user}=await accountRequest('session');if(!user)return;const link=$('.signin');if(link){link.textContent='Minha conta';link.href='/projects'}
-    if(route==='/app'){const panel=document.createElement('div');panel.className='notice account-panel';panel.setAttribute('role','status');const label=document.createElement('span');label.textContent=`Você entrou como ${user.name} · ${user.email}`;const exit=document.createElement('button');exit.className='btn secondary small';exit.textContent='Sair da conta';exit.addEventListener('click',async()=>{exit.disabled=true;try{await accountRequest('logout',{});location.assign('/login')}catch{exit.disabled=false;label.textContent='Não foi possível sair. Tente novamente.'}});panel.append(label,exit);$('.workspace-head').after(panel)}
+  try{const {user}=await accountRequest('session');if(!user)return;const link=$('.signin');if(link){link.textContent='Meus projetos';link.href='/projects'}
+    if(route==='/app'){const panel=document.createElement('div');panel.className='notice account-panel';panel.setAttribute('role','status');const label=document.createElement('span');label.textContent=`Você entrou como ${user.name} · ${user.email}`;const exit=document.createElement('button');exit.className='btn secondary small';exit.textContent='Sair da conta';exit.addEventListener('click',async()=>{exit.disabled=true;try{await accountRequest('logout',{});location.assign('/login')}catch{exit.disabled=false;label.textContent='Não foi possível sair. Tente novamente.'}});const projectsLink=document.createElement('a');projectsLink.href='/projects';projectsLink.className='btn small';projectsLink.textContent='Abrir meus projetos ↗';panel.append(label,projectsLink,exit);$('.workspace-head').after(panel)}
   }catch{/* Sem servidor de contas, a demonstração pública continua acessível. */}
 }
 if(!['/projects','/novo','/editor','/planos','/dominios','/indique'].includes(route))showDemoAccount();
