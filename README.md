@@ -1,10 +1,10 @@
 # Jutsoclone
 
-Implementação própria em português, inspirada na organização pública de clonuxy.com. Interface em HTML, CSS e JavaScript; servidor Node.js local e autenticação preparada para Netlify Functions. Editor e planos continuam demonstrativos: não há captura de sites remotos nem pagamento.
+Implementação própria em português, inspirada na organização e nos comportamentos observados da referência. Interface HTML/CSS/JavaScript, servidor Node.js e Netlify Functions. A versão inclui contas, projetos persistentes, captura estática limitada, editor e exportação ZIP. Pagamentos, domínios próprios e indicações continuam pendentes.
 
-## Executar localmente
+## Executar
 
-É necessário Node.js. Em um novo clone, na pasta do projeto:
+Requer Node.js 22.16 ou superior. Em um novo clone:
 
 ```powershell
 npm install
@@ -12,43 +12,32 @@ npm run build
 node server.mjs
 ```
 
-Abra http://127.0.0.1:4173. Para encerrar, pressione Ctrl+C no terminal. Rotas: `/`, `/login`, `/register` e `/app`.
+Abra http://127.0.0.1:4173. Rotas: `/`, `/login`, `/register` e `/app`. Para encerrar o servidor, pressione Ctrl+C. Para os testes automatizados disponíveis: `npm test`.
 
-O cadastro público permite criar uma conta, entrar e sair. Ainda não há verificação ou recuperação de senha por e-mail. O servidor local usa o mesmo handler de autenticação das funções, com armazenamento em `.data`, ignorado pelo Git. A conta legada configurada em `.env.local` continua disponível apenas no servidor local; não é uma conta de produção. Não publique esses arquivos nem compartilhe credenciais.
+## Contas e projetos
+
+Cadastre uma conta para criar, listar, abrir, editar e excluir seus projetos. O painel e a API persistem os projetos por usuário. É possível começar com HTML próprio ou solicitar uma captura de página pública autorizada. No editor, ajuste textos, links, imagens, vídeos, URLs e HTML, salve o projeto e exporte o ZIP.
+
+A captura importa HTML/CSS estático; não executa JavaScript nem acessa contas, formulários ou serviços privados da origem. Páginas dependentes de JavaScript podem não ser compatíveis. Imagens e outros recursos podem continuar externos: a exportação não deve ser tratada como cópia integral independente da origem. Revise os avisos de cada captura e use somente materiais próprios ou autorizados. O editor não publica automaticamente seu projeto.
+
+O cadastro ainda não tem confirmação ou recuperação de senha por e-mail. Na Netlify, contas, sessões e projetos usam Netlify Blobs persistente; localmente, os dados ficam em `.data`, ignorado pelo Git. A conta legada configurada em `.env.local` é exclusivamente local. Não publique esses arquivos nem compartilhe credenciais.
 
 ## Hospedar na Netlify
 
-O build `node scripts/build.mjs` (também executado por `npm run build`) gera `dist` somente com arquivos públicos da interface. `.env`, armazenamento, código de servidor e documentação não pertencem à pasta publicada. `netlify.toml` define `publish = "dist"` e as funções em `netlify/functions`.
+`npm run build` executa `node scripts/build.mjs` e gera `dist` apenas com assets públicos. `.env`, `.env.local`, `.data`, servidor e documentação ficam fora da pasta publicada. `netlify.toml` define a publicação de `dist` e as funções em `netlify/functions`. Há regras `_redirects` e arquivos próprios para acesso direto a `/login`, `/register` e `/app`.
 
-Faça o deploy pelo repositório Git conectado à Netlify ou pela CLI da Netlify com envio das funções. O envio de `dist` por arrastar e soltar serve as páginas e o editor demonstrativo, mas **não instala a API de autenticação**. Cadastro e login exigem Netlify Functions e armazenamento Netlify Blobs.
+Use integração Git ou CLI da Netlify com envio das funções. Arrastar `dist` publica somente a interface estática; não instala as APIs de contas, projetos e captura. O fluxo completo exige Functions e Blobs.
 
-As rotas `/login`, `/register` e `/app` recebem arquivos próprios em `/rota/index.html` e regras em `_redirects`, permitindo abrir e atualizar esses endereços diretamente.
-
-O erro 404 em `/login` foi reproduzido e corrigido. No endereço https://serene-cuchufli-29657f.netlify.app/ foram verificados online: abertura direta de `/login`, `/register`, `/app`, API de sessão, cadastro com abertura do editor, restauração da sessão após atualizar a página, logout e novo login com a conta persistida. A conta que existia na prévia local não é migrada ao Netlify: crie uma conta neste site. As credenciais da conta usada no teste ficam fora do repositório.
+Foi confirmado no navegador um 404 em https://serene-cuchufli-29657f.netlify.app/login antes da correção de hospedagem. Este documento não afirma teste online concluído da versão atual. Após o deploy, verificar rotas diretas, cadastro, sessão, logout e CRUD de projetos na URL final.
 
 ## Personalizar
 
-Edite `brand.config.js`:
+Edite `brand.config.js` para nome, empresa, apresentação, logotipo, paleta, contatos e planos propostos. `logo: null` mantém o nome em texto. WhatsApp e e-mail não foram informados. O favicon está em `favicon.svg`; metadados iniciais estão em `index.html`. A paleta usa verde-lima, turquesa e grafite.
 
-- `name`, `company`, `tagline` e `description`: identidade e apresentação.
-- `logo`: imagem opcional; `null` mantém o nome em texto.
-- `colors`: paleta proposta em verde-lima, turquesa e grafite.
-- `email` e `whatsapp`: contatos ainda não informados.
-- `plans`: propostas ilustrativas de planos e recursos.
-- `integrations`: configuração de serviços; preencher URLs sozinho não implementa um servidor ou conector.
-
-O favicon está em `favicon.svg`; os metadados iniciais estão em `index.html`. Para um logotipo próprio, coloque o arquivo entre os assets públicos e configure seu caminho. Consulte `INTEGRACOES.md` para autenticação, armazenamento e pendências.
-
-## O que funciona
-
-Navegação responsiva, menu móvel, perguntas frequentes, diálogos informativos e fluxo de contas; editor de exemplo próprio com título, descrição, cor e prévia ao vivo; salvamento do rascunho neste navegador; restauração do exemplo; exportação de ZIP real contendo `index.html`, `styles.css` e `LEIA-ME.txt`.
-
-Na Netlify, contas e sessões usam armazenamento persistente Netlify Blobs com consistência forte. A implantação com as funções deve estar concluída para esse fluxo funcionar online. O rascunho do editor continua local ao navegador e não sincroniza entre dispositivos. A URL informada no editor não é acessada ou clonada. Os planos são propostas; não há checkout nem publicação de projetos pelo editor.
+Os campos de integrações não implementam um servidor por si só. Consulte `INTEGRACOES.md`. Os planos comerciais são propostas e não têm checkout ativo.
 
 ## Evidências e limites
 
-REA verificou anteriormente a renderização desktop e o fluxo móvel de menu, FAQ, editor, edição, salvamento e acionamento da exportação, sem eventos de console ou erros de página nas capturas locais. A persistência do rascunho após recarregar foi confirmada no navegador. O REA cancela downloads por projeto; o ZIP foi validado separadamente pela função real em Node e descompactação com .NET, conferindo arquivos e UTF-8. Esses testes anteriores não comprovam a correção online de hospedagem ou os novos fluxos de autenticação.
+Leia `ANALISE.md` para observações da referência, limites e IDs REA disponíveis. As capturas e testes antigos da apresentação/editor demonstrativo não comprovam, por si, os novos fluxos autenticados. Não foram recuperados código-fonte privado, banco de dados ou lógica de servidor da referência. Não foram reutilizados logotipos, depoimentos ou imagens exclusivas da referência.
 
-Consulte `ANALISE.md` para IDs das evidências da referência e da interface. Em `referencias/` estão as capturas desktop e mobile. Não há integração com serviços privados do site de referência, nem reaproveitamento de seus logotipos, depoimentos ou imagens exclusivas.
-
-Captura remota, pagamentos, publicação de projetos, recuperação/verificação de e-mail e informações legais permanecem pendentes. Cadastro e sessões foram verificados na hospedagem, mas isso não equivale a uma auditoria completa de produção.
+Permanecem pendentes: captura com execução de JavaScript, pagamento/assinaturas, domínios próprios, indicações, publicação de projetos e verificação/recuperação de e-mail. Nenhuma publicação adicional é autorizada por este documento.

@@ -25,13 +25,13 @@ A rede da captura inicial mostra carregamento do documento, fontes públicas do 
 
 A apresentação sugere um produto com projetos, edição visual, exportação, contas, planos e publicação. A eficácia dessas operações, as permissões por plano e o processamento de pagamento não são comprovados pela página de divulgação. Sua implementação interna, banco de dados e lógica privada não foram recuperados.
 
-Não foram usados acessos restritos nem contornados controles de acesso. Além da página inicial, os formulários públicos de `/login` e `/register` foram inspecionados sem envio. Nenhuma área autenticada foi acessada. As promessas de fidelidade de captura e os depoimentos ilustrativos não foram tratados como evidência operacional ou clientes reais.
+A inspeção inicial limitou-se às páginas públicas e seus formulários, sem envio. Em uma etapa posterior, o usuário autorizou acesso autenticado e um único clone de teste de uma página própria, conforme registrado abaixo. Não foram contornados controles de acesso. As promessas de fidelidade de captura e os depoimentos ilustrativos não foram tratados como evidência operacional ou clientes reais.
 
 ## Reconstrução própria
 
-A versão Jutsoclone preserva a leitura por apresentação, demonstração, etapas, recursos, opções de uso e FAQ. A demonstração local edita conteúdo de exemplo e exporta um ZIP real com HTML, CSS e LEIA-ME; não oferece clonagem remota, pagamento, login ou hospedagem de produção. Dados da marca ficam centralizados em `brand.config.js`. Os valores comerciais, quando demonstrativos, devem estar identificados como tal.
+A versão Jutsoclone preserva a hierarquia da apresentação com identidade e textos próprios. A etapa atual acrescenta contas, painel e CRUD persistente de projetos por usuário, captura limitada de HTML/CSS público, editor de textos, links, imagens, vídeos, URLs e HTML, além de exportação ZIP. A captura não executa JavaScript e recursos externos podem permanecer dependentes da origem. Pagamento, domínios próprios, indicações e publicação de projetos continuam pendentes. Dados da marca ficam centralizados em `brand.config.js`; valores comerciais são propostas.
 
-## Verificação complementar
+## Verificação da etapa anterior da interface
 
 Desktop local, 1440 × 1000: Evidence ID `ev_199c2160f12fc627c20b6f8606acdb90e07ac15bea55d5bf5d770d88861f5e63`. Renderização capturada sem eventos de console ou erros de página.
 
@@ -48,3 +48,17 @@ Evidence ID `ev_4a3e722bab0e062fc81b116d7b574cbe65f2956da8cd0acd2e2479e9981c8356
 Validações adicionais da aplicação, verificadas pelo navegador: bloqueio de formulário vazio, rejeição de e-mail sem `@`, mensagem de serviço desconectado após dados válidos e remoção do rascunho ao restaurar o exemplo. A interface possui rótulos nos campos, foco visível, link de pular ao conteúdo, menu com estado expandido e preferência por movimento reduzido. Não foi realizada auditoria completa com leitor de tela.
 
 Evidence ID `ev_7aa4942729f03c1cd66fbd1dc95ba5a2ca2bd72d9b7b6941a112975a094201ba`, registro `rea-interactions.json`: passos de menu e acesso às páginas públicas concluídos. `/login` apresenta e-mail e senha; `/register` apresenta nome, e-mail e senha. Nenhum formulário original foi enviado. A captura tem incompletude de eventos, embora os passos estejam concluídos; por isso não sustenta conclusão de ausência de erros nessa sessão nem cobertura integral da rede.
+
+## Observações autenticadas autorizadas
+
+Em etapa posterior, o usuário autorizou o login na referência e um único clone de teste de uma página própria. A navegação no navegador mostrou área de projetos, criação de novo projeto, editor organizado em abas e limites associados ao plano. A interface informou consumo de 1 das 2 unidades disponíveis após esse teste. A exportação ZIP ficou bloqueada no plano gratuito; não se verificou exportação paga nem foi realizada compra. Áreas de domínios e indicações também apresentaram restrições de acesso/plano.
+
+O serviço gerou automaticamente um link para o projeto de teste, sem clique explícito no comando de publicar. Essa observação descreve o efeito visto nesse teste e não autoriza concluir como são implementadas hospedagem, expiração ou privacidade do link. Endereço privado do projeto, identificadores de indicação, e-mail e credenciais foram omitidos.
+
+Essas observações autenticadas foram relatadas pela inspeção direta no navegador. Não há um novo Evidence ID REA fornecido para elas; não se deve atribuí-las aos IDs das capturas públicas anteriores. Os registros REA listados acima continuam válidos apenas para seus próprios cenários. A infraestrutura, banco de dados e código privado da referência não foram recuperados.
+
+## Limites da implementação atual e validação
+
+A reconstrução implementa seu próprio fluxo de projetos e captura estática, sem usar APIs privadas da referência. Conteúdo executado por JavaScript, autenticação da página de origem, pagamentos, funis dinâmicos e scripts de terceiros não são reproduzidos pela captura. Recursos externos podem ser requisitados à origem quando a página é visualizada; um ZIP não implica incorporação de todos os arquivos. Formulários e execução de scripts da origem são desativados na captura.
+
+Os testes anteriores documentados de menu, apresentação, rascunho e ZIP correspondem à versão anterior da interface. Não são evidência de teste de ponta a ponta dos novos fluxos de projetos, nem de deploy online atualizado. Os resultados novos precisam ser avaliados separadamente antes da entrega e da publicação.

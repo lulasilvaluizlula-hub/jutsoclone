@@ -6,9 +6,9 @@ const output = path.resolve(root, 'dist');
 if (path.dirname(output) !== path.resolve(root) || path.basename(output) !== 'dist') throw new Error('Invalid build destination');
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
-for (const name of ['index.html', 'app.js', 'brand.config.js', 'styles.css', 'favicon.svg', '_redirects']) await copyFile(path.join(root, name), path.join(output, name));
+for (const name of ['index.html', 'app.js', 'workspace.js', 'workspace.css', 'exemplo.html', 'brand.config.js', 'styles.css', 'favicon.svg', '_redirects']) await copyFile(path.join(root, name), path.join(output, name));
 // Physical route entries also make exported static previews navigable without rewrite support.
-for (const route of ['login', 'register', 'app']) {
+for (const route of ['login', 'register', 'app', 'projects', 'novo', 'editor', 'planos', 'dominios', 'indique']) {
   await mkdir(path.join(output, route), { recursive: true });
   await copyFile(path.join(root, 'index.html'), path.join(output, route, 'index.html'));
 }

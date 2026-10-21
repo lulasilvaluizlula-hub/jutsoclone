@@ -4,7 +4,7 @@ import { mkdtemp, readdir, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { BlobsServer } from '@netlify/blobs/server';
-import { createAuthHandler } from '../lib/auth.mjs';
+import { createAuthHandler, getAuthenticatedUser } from '../lib/auth.mjs';
 import { createFileStore } from '../lib/file-store.mjs';
 import { createNetlifyStore } from '../lib/netlify-store.mjs';
 
@@ -12,6 +12,26 @@ const origin = 'https://jutsoclone.example';
 function request(action, data, cookie, source = origin) {
   return new Request(origin + '/api/auth/' + action, { method: data ? 'POST' : 'GET', headers: { Origin: source, ...(data ? { 'Content-Type': 'application/json' } : {}), ...(cookie ? { Cookie: cookie } : {}) }, ...(data ? { body: JSON.stringify(data) } : {}) });
 }
+
+test('leitor compartilhado ignora tokens inválidos e remove sessão na expiração exata', async () => {
+  const token = randomBytes(32).toString('hex');
+  const user = { name: 'Pessoa de teste', email: 'session@example.com' };
+  let session = { user, expires: 2000 };
+  let reads = 0;
+  const deleted = [];
+  const store = { get: async () => { reads++; return session; }, delete: async key => { deleted.push(key); session = null; } };
+  assert.equal(await getAuthenticatedUser(request('session'), store, () => 1000), null);
+  assert.equal(await getAuthenticatedUser(request('session', null, 'jutsoclone_session=invalid'), store, () => 1000), null);
+  assert.equal(reads, 0);
+  const authenticated = request('session', null, 'jutsoclone_session=' + token);
+  assert.deepEqual(await getAuthenticatedUser(authenticated, store, () => 1999), user);
+  assert.equal(deleted.length, 0);
+  assert.equal(await getAuthenticatedUser(authenticated, store, () => 2000), null);
+  assert.equal(deleted.length, 1);
+  assert.match(deleted[0], /^sessions\/[a-f0-9]{64}$/);
+  assert.equal(await getAuthenticatedUser(authenticated, store, () => 2001), null);
+  assert.equal(deleted.length, 1);
+});
 async function verifyAccounts(makeStore) {
   let time = Date.now();
   let storeError;
